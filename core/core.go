@@ -1,22 +1,22 @@
 package core
 
 import (
+	"encoding/json"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"github.com/luopotaotao/gochat/cons/url"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/cookiejar"
-	"fmt"
 	"os"
-	"gochat/cons/url"
-	"io/ioutil"
 	"os/exec"
 	"regexp"
-	"strings"
-	"encoding/json"
 	"strconv"
-	"time"
-	"errors"
-	"encoding/xml"
+	"strings"
 	"sync"
+	"time"
 )
 
 func New() *Core {
@@ -27,12 +27,12 @@ func New() *Core {
 			DisableCompression: true,
 			DisableKeepAlives:  false,
 		},
-		Timeout:15*time.Second,
+		Timeout: 15 * time.Second,
 	}
 	return &Core{
 		client:   client,
-		Handlers: map[int]func(chat *Core,msg AddMsg){},
-		DeviceId:Rand(),
+		Handlers: map[int]func(chat *Core, msg AddMsg){},
+		DeviceId: Rand(),
 	}
 }
 
@@ -42,7 +42,7 @@ type Core struct {
 	Uuid     string
 	Ticket   Ticket
 	DeviceId string
-	Handlers map[int]func(chat *Core,msg AddMsg)
+	Handlers map[int]func(chat *Core, msg AddMsg)
 }
 type Config struct {
 }
@@ -77,7 +77,7 @@ LoopQr:
 		}
 	}
 	if err != nil {
-		log.Println("获取ticket失败",err)
+		log.Println("获取ticket失败", err)
 	}
 	info, err := self.step5WxInit(self.Ticket)
 	self.ResponseInit = info
@@ -98,13 +98,13 @@ LoopQr:
 	s.Add(1)
 	go func() {
 		counter := 0
-		max := 10  //为非正整数时表示永不退出
+		max := 10 //为非正整数时表示永不退出
 		for {
 			_, err := self.step8SyncCheck(url.SYNCCHECK, self.Ticket, self.SyncKey)
 			if err != nil {
-				log.Println("同步心跳失败!",counter,err)
+				log.Println("同步心跳失败!", counter, err)
 				counter++
-				if max>0&&counter >= max {
+				if max > 0 && counter >= max {
 					log.Println("同步心跳失败次数达到上限,退出 ")
 					s.Done()
 				}
@@ -118,14 +118,14 @@ LoopQr:
 }
 
 //----------------------------------消息处理部分 start---------------------------------//
-func (self *Core) RegHandlers(handlers map[int]func(chat *Core,msg AddMsg)) {
+func (self *Core) RegHandlers(handlers map[int]func(chat *Core, msg AddMsg)) {
 	for key, f := range handlers {
 		self.Handlers[key] = f
 	}
 }
 func (self *Core) OnMsg(msgs ResponseAddMsg) {
 	//更新同步Key
-	if msgs.BaseResponse.Ret==0&&msgs.SyncKey.Count > 0 {
+	if msgs.BaseResponse.Ret == 0 && msgs.SyncKey.Count > 0 {
 		self.SyncKey = msgs.SyncKey
 	}
 
@@ -134,9 +134,9 @@ func (self *Core) OnMsg(msgs ResponseAddMsg) {
 		fun, ok := self.Handlers[msg.Type()]
 		if ok {
 			log.Println("获取到处理函数,开始处理!")
-			fun(self,msg)
+			fun(self, msg)
 		} else {
-			log.Printf("on unkonwn msg type : %d %d ,content: %s",msg.MsgType, msg.AppMsgType, msg.Content)
+			log.Printf("on unkonwn msg type : %d %d ,content: %s", msg.MsgType, msg.AppMsgType, msg.Content)
 		}
 	}
 
@@ -305,7 +305,7 @@ func (self *Core) step8SyncCheck(url string, t Ticket, keys SyncKey) (ret Respon
 		}
 	}
 	if ret.RetCode != "0" {
-		err = errors.New("心跳同步失败!"+string(res_bytes))
+		err = errors.New("心跳同步失败!" + string(res_bytes))
 		return
 	}
 	switch ret.Selector {

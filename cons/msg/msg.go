@@ -12,11 +12,10 @@ const (
 	TYPE_SHARING_COMMON     = 5
 	TYPE_SHARING_MUSIC      = 3
 	TYPE_SHARING_RED_PACKET = 2001
-	TYPE_SYSTEM  = 10000
-
+	TYPE_SYSTEM             = 10000
 )
 const (
-	MSG_UNKNOW                          = iota
+	MSG_UNKNOW = iota
 	MSG_BLANK
 	MSG_TEXT
 	MSG_IMG

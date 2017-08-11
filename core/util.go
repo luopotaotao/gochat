@@ -2,16 +2,16 @@ package core
 
 import (
 	"bytes"
-	"strings"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"encoding/json"
-	"time"
-	"regexp"
 	"math/rand"
+	"regexp"
+	"strings"
+	"time"
 )
 
-func(self *Core) Get(url string, p map[string]string) ([]byte, error) {
+func (self *Core) Get(url string, p map[string]string) ([]byte, error) {
 
 	size := len(p)
 
@@ -91,4 +91,3 @@ func ParseResReg(reg string, txt []byte, n int) (code string, strs []string, err
 	strs = matches[0][2:]
 	return code, strs, nil
 }
-
